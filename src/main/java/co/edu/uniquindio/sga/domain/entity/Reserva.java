@@ -7,7 +7,7 @@ import co.edu.uniquindio.sga.domain.valueobject.Dinero;
 import co.edu.uniquindio.sga.domain.valueobject.Estancia;
 import co.edu.uniquindio.sga.domain.valueobject.EstadoReserva;
 import co.edu.uniquindio.sga.domain.valueobject.HoraEstimadaLlegada;
-import co.edu.uniquindio.sga.domain.valueobject.IdentificacionApartamento;
+import co.edu.uniquindio.sga.domain.valueobject.IdentificacionSolar;
 import co.edu.uniquindio.sga.domain.valueobject.IdentificadorExterno;
 import co.edu.uniquindio.sga.domain.valueobject.UmbralEdadFacturable;
 import co.edu.uniquindio.sga.domain.valueobject.VersionPolitica;
@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * Raíz del agregado Reserva.
  *
- * <p>Invariantes que garantiza este agregado: RN-02 (capacidad del apartamento al crear y
+ * <p>Invariantes que garantiza este agregado: RN-02 (capacidad del solar al crear y
  * modificar), RN-03 (a través de {@link Estancia}), RN-04 (no se reserva hacia el pasado),
  * RN-06 (ocupantes facturables), RN-08 (transiciones de estado), RN-09 (hora estimada de
  * llegada antes de confirmar), RN-10 (registro de llegada), RN-14 (revalidación al modificar)
@@ -28,7 +28,7 @@ import java.util.Objects;
 public class Reserva {
 
     private final CodigoReserva codigo;
-    private final IdentificacionApartamento apartamento;
+    private final IdentificacionSolar solar;
     private Estancia estancia;
     private EstadoReserva estado;
     private final CanalOrigen canalOrigen;
@@ -42,7 +42,7 @@ public class Reserva {
     private String motivoCancelacion;
 
     private Reserva(CodigoReserva codigo,
-                     IdentificacionApartamento apartamento,
+                     IdentificacionSolar solar,
                      Estancia estancia,
                      CanalOrigen canalOrigen,
                      Ocupante titular,
@@ -51,7 +51,7 @@ public class Reserva {
                      VersionPolitica politicaCongelada,
                      LocalDate fechaCreacion) {
         this.codigo = codigo;
-        this.apartamento = apartamento;
+        this.solar = solar;
         this.estancia = estancia;
         this.estado = EstadoReserva.PENDIENTE;
         this.canalOrigen = canalOrigen;
@@ -64,13 +64,13 @@ public class Reserva {
 
     /**
      * Nota de diseño: la capacidad entra como parámetro y no se consulta llamando a un
-     * objeto {@code Apartamento}, porque eso implicaría que este agregado lea el estado
+     * objeto {@code Solar}, porque eso implicaría que este agregado lea el estado
      * interno de otro agregado, lo cual está prohibido. Quien orquesta la creación es
      * responsable de traer ese dato.
      */
     public static Reserva crear(CodigoReserva codigo,
-                                 IdentificacionApartamento apartamento,
-                                 int capacidadApartamento,
+                                 IdentificacionSolar solar,
+                                 int capacidadSolar,
                                  Estancia estancia,
                                  Ocupante titular,
                                  List<Ocupante> ocupantes,
@@ -81,8 +81,8 @@ public class Reserva {
         if (codigo == null) {
             throw new ReglaDominioException("La reserva debe tener un código.");
         }
-        if (apartamento == null) {
-            throw new ReglaDominioException("La reserva debe indicar el apartamento.");
+        if (solar == null) {
+            throw new ReglaDominioException("La reserva debe indicar el solar.");
         }
         if (estancia == null) {
             throw new ReglaDominioException("La reserva debe indicar la estancia.");
@@ -119,13 +119,13 @@ public class Reserva {
         if (estancia.fechaEntrada().isBefore(fechaActual)) {
             throw new ReglaDominioException("La fecha de entrada no puede ser anterior a la fecha actual.");
         }
-        // RN-02: el número total de ocupantes no puede exceder la capacidad del apartamento
-        if (ocupantes.size() > capacidadApartamento) {
-            throw new ReglaDominioException("El número de ocupantes excede la capacidad del apartamento.");
+        // RN-02: el número total de ocupantes no puede exceder la capacidad del solar
+        if (ocupantes.size() > capacidadSolar) {
+            throw new ReglaDominioException("El número de ocupantes excede la capacidad del solar.");
         }
 
         // RN-22: el valor y la política quedan congelados al crear la reserva
-        return new Reserva(codigo, apartamento, estancia, canalOrigen, titular,
+        return new Reserva(codigo, solar, estancia, canalOrigen, titular,
                 List.copyOf(ocupantes), valorCongelado, politicaCongelada, fechaActual);
     }
 
@@ -172,7 +172,7 @@ public class Reserva {
 
     /**
      * RN-08 y RN-10: solo se registra la llegada si la reserva está CONFIRMADA y no antes de
-     * la fecha de entrada. La verificación del estado operativo del apartamento no va aquí:
+     * la fecha de entrada. La verificación del estado operativo del solar no va aquí:
      * es una precondición externa que resuelve el servicio de dominio correspondiente.
      */
     public void registrarLlegada(LocalDate fechaActual) {
@@ -191,10 +191,10 @@ public class Reserva {
     }
 
     /**
-     * RN-14: todo cambio de fechas, ocupantes o apartamento revalida las condiciones de
+     * RN-14: todo cambio de fechas, ocupantes o solar revalida las condiciones de
      * creación y recalcula el valor. RN-22: el valor solo cambia por modificación explícita.
      */
-    public void modificarEstancia(Estancia nueva, Dinero nuevoValor, int capacidadApartamento, LocalDate fechaActual) {
+    public void modificarEstancia(Estancia nueva, Dinero nuevoValor, int capacidadsolar, LocalDate fechaActual) {
         if (nueva == null) {
             throw new ReglaDominioException("La nueva estancia es obligatoria.");
         }
@@ -205,9 +205,9 @@ public class Reserva {
         if (nueva.fechaEntrada().isBefore(fechaActual)) {
             throw new ReglaDominioException("La fecha de entrada no puede ser anterior a la fecha actual.");
         }
-        // RN-02: la nueva estancia también debe respetar la capacidad del apartamento
-        if (ocupantes.size() > capacidadApartamento) {
-            throw new ReglaDominioException("El número de ocupantes excede la capacidad del apartamento.");
+        // RN-02: la nueva estancia también debe respetar la capacidad del solar
+        if (ocupantes.size() > capacidadsolar) {
+            throw new ReglaDominioException("El número de ocupantes excede la capacidad del solar.");
         }
         this.estancia = nueva;
         this.valorCongelado = nuevoValor;
@@ -239,8 +239,8 @@ public class Reserva {
         return codigo;
     }
 
-    public IdentificacionApartamento getApartamento() {
-        return apartamento;
+    public IdentificacionSolar getSolar() {
+        return solar;
     }
 
     public Estancia getEstancia() {

@@ -32,7 +32,7 @@ public record Estancia(LocalDate fechaEntrada, LocalDate fechaSalida) {
         return !noche.isBefore(fechaEntrada) && noche.isBefore(fechaSalida);
     }
 
-    /** RN-01: un apartamento no puede tener dos reservas activas solapadas. */
+    /** RN-01: un solar no puede tener dos reservas activas solapadas. */
     public boolean seSolapaCon(Estancia otra) {
         return fechaEntrada.isBefore(otra.fechaSalida) && otra.fechaEntrada.isBefore(fechaSalida);
     }

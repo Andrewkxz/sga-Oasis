@@ -6,7 +6,7 @@ import co.edu.uniquindio.sga.domain.exception.ReglaDominioException;
 import co.edu.uniquindio.sga.domain.repository.BloqueoRepository;
 import co.edu.uniquindio.sga.domain.repository.ReservaRepository;
 import co.edu.uniquindio.sga.domain.valueobject.Estancia;
-import co.edu.uniquindio.sga.domain.valueobject.IdentificacionApartamento;
+import co.edu.uniquindio.sga.domain.valueobject.IdentificacionSolar;
 import co.edu.uniquindio.sga.domain.valueobject.Periodo;
 import co.edu.uniquindio.sga.domain.valueobject.TiempoPreparacion;
 
@@ -18,20 +18,20 @@ import java.util.List;
  * vigente), RN-12 (las reservas no activas no cuentan) y RN-20 (tiempo de preparación entre
  * la salida de un grupo y la entrada del siguiente).
  */
-public class DisponibilidadApartamentoService {
+public class DisponibilidadsolarService {
 
     private final ReservaRepository reservaRepository;
     private final BloqueoRepository bloqueoRepository;
 
-    public DisponibilidadApartamentoService(ReservaRepository reservaRepository, BloqueoRepository bloqueoRepository) {
+    public DisponibilidadsolarService(ReservaRepository reservaRepository, BloqueoRepository bloqueoRepository) {
         this.reservaRepository = reservaRepository;
         this.bloqueoRepository = bloqueoRepository;
     }
 
-    public boolean estaDisponible(IdentificacionApartamento apartamento, Estancia estancia, TiempoPreparacion preparacion) {
+    public boolean estaDisponible(IdentificacionSolar solar, Estancia estancia, TiempoPreparacion preparacion) {
         Periodo periodo = new Periodo(estancia.fechaEntrada(), estancia.fechaSalida());
 
-        List<Reserva> activas = reservaRepository.buscarActivasPorApartamento(apartamento, periodo);
+        List<Reserva> activas = reservaRepository.buscarActivasPorsolar(solar, periodo);
         for (Reserva otra : activas) {
             // RN-12: una reserva que dejó de estar activa no ocupa noches
             if (!otra.estaActiva()) {
@@ -48,7 +48,7 @@ public class DisponibilidadApartamentoService {
         }
 
         // RN-07
-        List<Bloqueo> bloqueos = bloqueoRepository.buscarVigentesPorApartamento(apartamento, periodo);
+        List<Bloqueo> bloqueos = bloqueoRepository.buscarVigentesPorsolar(solar, periodo);
         for (Bloqueo bloqueo : bloqueos) {
             if (bloqueo.afecta(estancia)) {
                 return false;
@@ -58,10 +58,10 @@ public class DisponibilidadApartamentoService {
         return true;
     }
 
-    public void verificarDisponibilidad(IdentificacionApartamento apartamento, Estancia estancia, TiempoPreparacion preparacion) {
-        if (!estaDisponible(apartamento, estancia, preparacion)) {
+    public void verificarDisponibilidad(IdentificacionSolar solar, Estancia estancia, TiempoPreparacion preparacion) {
+        if (!estaDisponible(solar, estancia, preparacion)) {
             throw new ReglaDominioException(
-                    "El apartamento no está disponible para la estancia solicitada.");
+                    "El solar no está disponible para la estancia solicitada.");
         }
     }
 

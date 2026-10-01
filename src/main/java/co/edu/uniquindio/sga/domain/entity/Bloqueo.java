@@ -3,7 +3,7 @@ package co.edu.uniquindio.sga.domain.entity;
 import co.edu.uniquindio.sga.domain.exception.ReglaDominioException;
 import co.edu.uniquindio.sga.domain.valueobject.Estancia;
 import co.edu.uniquindio.sga.domain.valueobject.IdBloqueo;
-import co.edu.uniquindio.sga.domain.valueobject.IdentificacionApartamento;
+import co.edu.uniquindio.sga.domain.valueobject.IdentificacionSolar;
 import co.edu.uniquindio.sga.domain.valueobject.MotivoBloqueo;
 import co.edu.uniquindio.sga.domain.valueobject.Periodo;
 
@@ -16,19 +16,19 @@ import java.util.Objects;
 public class Bloqueo {
 
     private final IdBloqueo id;
-    private final IdentificacionApartamento apartamento;
+    private final IdentificacionSolar solar;
     private Periodo periodo;
     private final MotivoBloqueo motivo;
     private String observacion;
     private boolean vigente;
 
-    public Bloqueo(IdBloqueo id, IdentificacionApartamento apartamento, Periodo periodo,
+    public Bloqueo(IdBloqueo id, IdentificacionSolar solar, Periodo periodo,
                     MotivoBloqueo motivo, String observacion) {
         if (id == null) {
             throw new ReglaDominioException("El bloqueo debe tener un identificador.");
         }
-        if (apartamento == null) {
-            throw new ReglaDominioException("El bloqueo debe indicar el apartamento afectado.");
+        if (solar == null) {
+            throw new ReglaDominioException("El bloqueo debe indicar el solar afectado.");
         }
         if (periodo == null) {
             throw new ReglaDominioException("El bloqueo debe indicar el periodo que cubre.");
@@ -37,14 +37,14 @@ public class Bloqueo {
             throw new ReglaDominioException("El bloqueo debe indicar su motivo.");
         }
         this.id = id;
-        this.apartamento = apartamento;
+        this.solar = solar;
         this.periodo = periodo;
         this.motivo = motivo;
         this.observacion = observacion;
         this.vigente = true;
     }
 
-    /** RN-07: un apartamento con bloqueo vigente sobre una noche no está disponible para esa noche. */
+    /** RN-07: un solar con bloqueo vigente sobre una noche no está disponible para esa noche. */
     public boolean cubre(LocalDate noche) {
         return vigente && periodo.contiene(noche);
     }
@@ -62,8 +62,8 @@ public class Bloqueo {
         return id;
     }
 
-    public IdentificacionApartamento getApartamento() {
-        return apartamento;
+    public IdentificacionSolar getSolar() {
+        return solar;
     }
 
     public Periodo getPeriodo() {
