@@ -13,98 +13,87 @@ servers:
 paths:
   /reservas:
     post:
-      summary: CrearReservaUseCase - Crea un recurso nuevo
+      summary: Crear una nueva reserva
       operationId: crearReserva
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CrearReservaDTO"
+              $ref: '#/components/schemas/CrearReservaDTO'
       responses:
-        "201":
+        '201':
           description: Reserva creada exitosamente en estado PENDIENTE.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReservaDTO"
-        "400":
+                $ref: '#/components/schemas/ReservaDTO'
+        '400':
           description: Violación de regla de dominio (Capacidad superada, solapamiento o fecha pasada).
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorDominioDTO"
+                $ref: '#/components/schemas/ErrorDominioDTO'
 
     get:
-      summary: ConsultarReservasPorEstadoUseCase - Lista recursos con filtros
-      operationId: consultarReservasPorEstado
+      summary: Consultar reservas
+      operationId: consultarReservas
       parameters:
         - name: estado
           in: query
           required: false
           schema:
             type: string
-            enum:
-              [PENDIENTE, CONFIRMADA, EN_CURSO, FINALIZADA, CANCELADA, NO_SHOW]
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: size
-          in: query
-          description: Tamaño de página obligatorio de 10 (12.4)
-          schema:
-            type: integer
-            default: 10
-            maximum: 10
+            enum: [PENDIENTE, CONFIRMADA, EN_CURSO, FINALIZADA, CANCELADA, NO_SHOW]
       responses:
-        "200":
-          description: Página de reservas encontrada.
+        '200':
+          description: Listado de reservas encontrado.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginaReservasDTO"
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservaDTO'
 
   /reservas/{codigo}:
     get:
-      summary: ConsultarReservaUseCase - Obtiene un recurso
-      operationId: consultarReserva
+      summary: Consultar detalle de reserva por código
+      operationId: consultarReservaPorCodigo
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       responses:
-        "200":
+        '200':
           description: Reserva encontrada.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReservaDTO"
-        "404":
+                $ref: '#/components/schemas/ReservaDTO'
+        '404':
           description: Reserva no encontrada.
 
     put:
-      summary: ModificarReservaUseCase - Reemplaza los datos modificables (7.5, RN-14)
+      summary: Modificar reserva activa (Fechas, Solar u Ocupantes)
       operationId: modificarReserva
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ModificarReservaDTO"
+              $ref: '#/components/schemas/ModificarReservaDTO'
       responses:
-        "200":
+        '200':
           description: Reserva modificada y recalculada con éxito.
-        "400":
+        '400':
           description: Ajuste rechazado por violar reglas de dominio.
 
   /reservas/{codigo}/confirmar:
     put:
-      summary: ConfirmarReservaUseCase - Operación de negocio
+      summary: Confirmar una reserva pendiente
       operationId: confirmarReserva
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       requestBody:
         required: true
         content:
@@ -117,165 +106,64 @@ paths:
                   example: "14:30"
               required: [horaEstimadaLlegada]
       responses:
-        "200":
+        '200':
           description: Reserva confirmada correctamente.
-        "400":
+        '400':
           description: No cumple el anticipo mínimo del 50% o falta la hora estimada.
-
-  /reservas/{codigo}/cancelar:
-    put:
-      summary: CancelarReservaUseCase - Operación de negocio
-      operationId: cancelarReserva
-      parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
-      responses:
-        "200":
-          description: Reserva cancelada exitosamente aplicando la política congelada.
 
   /reservas/{codigo}/registrar-llegada:
     put:
-      summary: RegistrarLlegadaUseCase - Operación de negocio
+      summary: Registrar llegada del grupo (Check-in)
       operationId: registrarLlegada
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       responses:
-        "200":
+        '200':
           description: Check-in exitoso; estado pasa a EN_CURSO.
-        "400":
+        '400':
           description: El solar no está en estado PREPARADO o la reserva no está CONFIRMADA.
 
   /reservas/{codigo}/registrar-salida:
     put:
-      summary: RegistrarSalidaUseCase - Operación de negocio
+      summary: Registrar salida del grupo (Check-out)
       operationId: registrarSalida
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       responses:
-        "200":
+        '200':
           description: Check-out exitoso y folio cerrado.
-        "400":
+        '400':
           description: El folio tiene saldo pendiente de pago.
-
-  /reservas/{codigo}/no-show:
-    put:
-      summary: DeclararNoShowUseCase - Operación de negocio
-      operationId: declararNoShow
-      parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
-      responses:
-        "200":
-          description: Reserva marcada como NO_SHOW y noches liberadas.
 
   /reservas/{codigo}/folio:
     get:
-      summary: ConsultarFolioUseCase - Sub-recurso de la reserva
+      summary: Consultar folio de la estancia
       operationId: consultarFolio
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       responses:
-        "200":
+        '200':
           description: Detalle del folio con cargos, pagos y saldo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FolioDTO"
+                $ref: '#/components/schemas/FolioDTO'
 
   /reservas/{codigo}/folio/pagos:
     post:
-      summary: RegistrarPagoUseCase - Crea un movimiento en el folio (RN-15)
+      summary: Registrar un pago en el folio
       operationId: registrarPago
       parameters:
-        - $ref: "#/components/parameters/CodigoReservaParam"
+        - $ref: '#/components/parameters/CodigoReservaParam'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RegistrarPagoDTO"
+              $ref: '#/components/schemas/RegistrarPagoDTO'
       responses:
-        "201":
+        '201':
           description: Pago registrado en el folio.
-
-  /cotizaciones:
-    post:
-      summary: CotizarEstanciaUseCase - Calcular el valor y desglose sin crear recurso
-      operationId: cotizarEstancia
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CotizarEstanciaDTO"
-      responses:
-        "200":
-          description: Cotización calculada exitosamente.
-
-    /solares/disponibles:
-    get:
-      summary: ConsultarSolaresDisponiblesUseCase - Consultar con filtros para listar solares
-      operationId: consultarSolaresDisponibles
-      parameters:
-        - name: fechaEntrada
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: fechaSalida
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: size
-          in: query
-          schema:
-            type: integer
-            default: 10
-            maximum: 10
-      responses:
-        "200":
-          description: Página de solares disponibles para el rango especificado.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaginaSolaresDTO"
-
-  /solares/{identificacion}:
-    get:
-      summary: ConsultarSolarUseCase - Obtiene el detalle completo de un Solar
-      operationId: consultarSolar
-      parameters:
-        - name: identificacion
-          in: path
-          required: true
-          schema:
-            type: string
-            example: "SOL-101"
-      responses:
-        "200":
-          description: Detalle del solar encontrado.
-
-  /externo/reservas:
-    post:
-      summary: RecibirReservaExternaUseCase - Crea un recurso desde el canal externo (RN-18, RN-19)
-      operationId: recibirReservaExterna
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CrearReservaExternaDTO"
-      responses:
-        "201":
-          description: Reserva externa procesada e integrada.
-        "409":
-          description: Conflicto de disponibilidad o mensaje duplicado recibido.
 
 components:
   parameters:
@@ -288,22 +176,7 @@ components:
         pattern: '^RES-\d{4}-\d{5}$'
         example: "RES-2026-00001"
 
-    schemas:
-    
-    OcupanteRequestDTO:
-      type: object
-      required: [documento, nombre, fechaNacimiento]
-      properties:
-        documento:
-          type: string
-        nombre:
-          type: string
-        fechaNacimiento:
-          type: string
-          format: date
-          description: Se evalúa para determinar si es facturable a la fecha de entrada.
-
-    
+  schemas:
     CrearReservaDTO:
       type: object
       properties:
@@ -323,76 +196,14 @@ components:
           enum: [PORTAL, DIRECTO, EXTERNO]
         cantidadMascotas:
           type: integer
-          example: 0
+          example: 3
         cantidadVehiculos:
           type: integer
-          example: 1
-        titular:
-          $ref: '#/components/schemas/OcupanteRequestDTO'
-        ocupantes:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OcupanteRequestDTO'
-      required: [identificacionSolar, fechaEntrada, fechaSalida, canalOrigen, titular, ocupantes]
-
-   
-    CotizarEstanciaDTO:
-      type: object
-      properties:
-        identificacionSolar:
+          example: 2
+        documentoTitular:
           type: string
-          example: "SOL-101"
-        fechaEntrada:
-          type: string
-          format: date
-        fechaSalida:
-          type: string
-          format: date
-        ocupantes:
-          type: array
-          minItems: 1
-          items:
-            type: object
-            required: [fechaNacimiento]
-            properties:
-              fechaNacimiento:
-                type: string
-                format: date
-      required: [identificacionSolar, fechaEntrada, fechaSalida, ocupantes]
-
-   
-    PaginaReservasDTO:
-      type: object
-      properties:
-        contenido:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReservaDTO'
-        paginaActual:
-          type: integer
-        totalPaginas:
-          type: integer
-        totalElementos:
-          type: integer
-        tamanoPagina:
-          type: integer
-
-    PaginaSolaresDTO:
-      type: object
-      properties:
-        contenido:
-          type: array
-          items:
-            type: object 
-        paginaActual:
-          type: integer
-        totalPaginas:
-          type: integer
-        totalElementos:
-          type: integer
-        tamanoPagina:
-          type: integer
+          example: "1094857392"
+      required: [identificacionSolar, fechaEntrada, fechaSalida, canalOrigen, documentoTitular]
 
     ReservaDTO:
       type: object
@@ -446,31 +257,6 @@ components:
         nuevaFechaSalida:
           type: string
           format: date
-
-    CotizarEstanciaDTO:
-      type: object
-      properties:
-        identificacionSolar:
-          type: string
-          example: "SOL-101"
-        fechaEntrada:
-          type: string
-          format: date
-        fechaSalida:
-          type: string
-          format: date
-        cantidadOcupantes:
-          type: integer
-
-    CrearReservaExternaDTO:
-      type: object
-      properties:
-        identificadorExterno:
-          type: string
-          example: "EXT-88392"
-        canalOrigen:
-          type: string
-          example: "EXTERNO"
 
     ErrorDominioDTO:
       type: object
