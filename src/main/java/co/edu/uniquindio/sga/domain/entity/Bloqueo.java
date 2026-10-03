@@ -9,7 +9,6 @@ import co.edu.uniquindio.sga.domain.valueobject.Periodo;
 
 import java.time.LocalDate;
 import java.util.Objects;
-
 /**
  * Raíz del agregado Bloqueo.
  */

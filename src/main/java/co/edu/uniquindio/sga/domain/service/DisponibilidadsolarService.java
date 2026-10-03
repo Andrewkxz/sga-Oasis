@@ -31,7 +31,7 @@ public class DisponibilidadsolarService {
     public boolean estaDisponible(IdentificacionSolar solar, Estancia estancia, TiempoPreparacion preparacion) {
         Periodo periodo = new Periodo(estancia.fechaEntrada(), estancia.fechaSalida());
 
-        List<Reserva> activas = reservaRepository.buscarActivasPorsolar(solar, periodo);
+        List<Reserva> activas = reservaRepository.buscarActivasPorSolar(solar, periodo);
         for (Reserva otra : activas) {
             // RN-12: una reserva que dejó de estar activa no ocupa noches
             if (!otra.estaActiva()) {

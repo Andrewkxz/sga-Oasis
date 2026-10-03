@@ -2,6 +2,7 @@ package co.edu.uniquindio.sga.domain.repository;
 
 import co.edu.uniquindio.sga.domain.entity.Reserva;
 import co.edu.uniquindio.sga.domain.valueobject.CodigoReserva;
+import co.edu.uniquindio.sga.domain.valueobject.EstadoReserva;
 import co.edu.uniquindio.sga.domain.valueobject.IdentificacionSolar;
 import co.edu.uniquindio.sga.domain.valueobject.Periodo;
 
@@ -10,8 +11,11 @@ import java.util.Optional;
 
 public interface ReservaRepository {
 
-    List<Reserva> buscarActivasPorsolar(IdentificacionSolar solar, Periodo periodo);
+    List<Reserva> buscarActivasPorSolar(IdentificacionSolar solar, Periodo periodo);
     Optional<Reserva> obtenerPorCodigo(CodigoReserva codigo);
 
     void guardar(Reserva reserva);
+
+    List<Reserva> buscarPorEstado(EstadoReserva estado);
+
 }
