@@ -1,6 +1,6 @@
-* **Oasis**
+* **Ravenwood**
   
-  Oasis es un alojamiento paradisíaco que tiene como objetivo satisfacer las necesidades de los clientes en un entorno rodeado de naturaleza.
+  Conjunto de solares residenciales independientes ubicados en el tranquilo y místico entorno de Ravenwood. Cada solar ofrece una vivienda con dormitorio, cocina, baño y zona social para los ocupantes.
 
 * **Integrantes del quipo:**
   * Jaider Andrés Melo Rodríguez
